@@ -333,6 +333,10 @@ bool is_manager_apk(char *path)
 
 	// midori01/KernelSU
 	if (check_v2_signature(path, 0x0368, "b9ee6759de4794f954883458b722b97ae6527cb7709a051db9a2348c0eea1e42"))
+        return true;
+
+	// rifsxd/KernelSU-Next
+	if (check_v2_signature(path, 0x3e6, "79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7"))
 		return true;
 
 	return false;
