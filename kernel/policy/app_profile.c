@@ -48,43 +48,27 @@ static void setup_groups(struct root_profile *profile, struct cred *cred)
 	put_group_info(group_info);
 }
 
+/*
+ * lets just have kernel do cleanup for us (put_seccomp_filter/seccomp_filter_release)
+ * this is how the kernel does it and we dont have to do all this refcounting shit that
+ * upstream does due to current->seccomp.filter = NULL;
+ *
+ * see: seccomp_assign_mode();
+ * - if this has repercussions, then we can just restore all those refcounting shit
+ */
 static void disable_seccomp(void)
 {
-	struct task_struct *fake;
-
-	fake = kmalloc(sizeof(*fake), GFP_KERNEL);
-	if (!fake) {
-		pr_warn("failed to alloc fake task_struct\n");
-		return;
-	}
-
-	// Refer to kernel/seccomp.c: seccomp_set_mode_strict
-	// When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
 	spin_lock_irq(&current->sighand->siglock);
-	// disable seccomp
+
+	current->seccomp.mode = 0;
+	smp_mb();
+
 #if defined(CONFIG_GENERIC_ENTRY) && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 	clear_syscall_work(SECCOMP);
 #else
 	clear_thread_flag(TIF_SECCOMP);
 #endif
-
-	memcpy(fake, current, sizeof(*fake));
-
-	current->seccomp.mode = 0;
-	current->seccomp.filter = NULL;
-	atomic_set(&current->seccomp.filter_count, 0);
 	spin_unlock_irq(&current->sighand->siglock);
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
-	// https://github.com/torvalds/linux/commit/bfafe5efa9754ebc991750da0bcca2a6694f3ed3#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R576-R577
-	fake->flags |= PF_EXITING;
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
-	// https://github.com/torvalds/linux/commit/0d8315dddd2899f519fe1ca3d4d5cdaf44ea421e#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R556-R558
-	fake->sighand = NULL;
-#endif
-
-	seccomp_filter_release(fake);
-	kfree(fake);
 }
 
 int escape_with_root_profile(void)
@@ -163,7 +147,8 @@ int escape_with_root_profile(void)
 
 	commit_creds(cred);
 
-	disable_seccomp();
+	if (ksu_is_seccomp_enabled())
+		disable_seccomp();
 
 	if (profile->flags & FLAG_KSU_NO_NEW_PRIVS) {
 		set_thread_flag(TIF_KSU_DISABLE_ESCAPE_WITH_ROOT);
