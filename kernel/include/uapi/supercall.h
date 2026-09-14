@@ -158,6 +158,18 @@ struct ksu_get_sulog_fd_cmd {
 	__u32 flags; /* Input: reserved for future use, must be 0 */
 };
 
+struct ksu_hook_type_cmd {
+	char hook_type[32];
+};
+
+struct ksu_susfs_version_cmd {
+	char version[32];
+};
+
+struct ksu_driver_name_cmd {
+	char name[32];
+};
+
 /*
  * Batch kernel image symbol lookup. Returns the number of symbols found; the
  * address of a symbol that does not exist in the running kernel is set to 0.
@@ -206,6 +218,9 @@ struct ksu_lookup_symbols_cmd {
 #define KSU_IOCTL_GET_SULOG_FD			_IOW('K', 20, struct ksu_get_sulog_fd_cmd)
 #define KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT	_IO('K', 21)
 #define KSU_IOCTL_LOOKUP_SYMBOLS		_IOW('K', 22, struct ksu_lookup_symbols_cmd)
+#define KSU_IOCTL_HOOK_TYPE			_IOC(_IOC_READ, 'K', 101, 0)
+#define KSU_IOCTL_SUSFS_VERSION			_IOC(_IOC_READ, 'K', 102, 0)
+#define KSU_IOCTL_DRIVER_NAME			_IOC(_IOC_READ, 'K', 104, 0)
 
 #define KSU_IOCTL_GET_HOOK_MODE _IOC(_IOC_READ, 'K', 98, 0)
 #define KSU_IOCTL_GET_VERSION_TAG _IOC(_IOC_READ, 'K', 99, 0)
