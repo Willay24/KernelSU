@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen.home
 
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -254,7 +255,7 @@ private fun StatusCard(
                     }
                 }
                 val workingMode = when (state.lkmMode) {
-                    null -> null
+                    null -> if (Build.SUPPORTED_64_BIT_ABIS.isEmpty()) "32-BIT" else "LEGACY"
                     true -> "LKM"
                     else -> "GKI"
                 }
@@ -301,19 +302,17 @@ private fun StatusCard(
                                     contentDescription = null
                                 )
                             }
-                            if (workingMode != null) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(16.dp, 10.dp),
-                                    contentAlignment = Alignment.BottomStart,
-                                ) {
-                                    Text(
-                                        text = workingMode,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Medium,
-                                    )
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp, 10.dp),
+                                contentAlignment = Alignment.BottomStart,
+                            ) {
+                                Text(
+                                    text = workingMode,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                )
                             }
                             Box(
                                 modifier = Modifier
