@@ -472,9 +472,6 @@ static inline void kfree_byref(void *buf) { kfree(*(void **)buf); }
  *
  */
 #if defined(CONFIG_KSU_NOPRINTK) && !defined(CONFIG_KSU_DEBUG)
-#ifndef no_printk
-#define no_printk(...) do { } while (0)
-#endif
 #define pr_emerg(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
 #define pr_alert(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
 #define pr_crit(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
@@ -484,7 +481,6 @@ static inline void kfree_byref(void *buf) { kfree(*(void **)buf); }
 #define pr_info(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
 #define pr_debug(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
 #define pr_devel(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
-#define printk(fmt, ...)	no_printk(fmt, ##__VA_ARGS__)
 #endif // CONFIG_KSU_NOPRINTK && !CONFIG_KSU_DEBUG
 
 /**
