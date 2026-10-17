@@ -47,7 +47,12 @@
  *
  */
 
-#define KEEP_SYMBOL __attribute__((used)) noinline
+#if defined(__GNUC__) && !defined(__clang__)
+#define KEEP_SYMBOL __attribute__((used)) noinline __attribute__((optimize("no-optimize-sibling-calls")))
+#else
+#define KEEP_SYMBOL __attribute__((used)) noinline __attribute__((disable_tail_calls))
+#endif
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Winfinite-recursion"
